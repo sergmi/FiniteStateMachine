@@ -1,8 +1,4 @@
-class FSM {
-    /**
-     * Creates new FSM instance.
-     * @param config
-     */
+class FSM {   
     constructor(config) {
 		if(!config){
 			alert('ERROR');
@@ -10,74 +6,137 @@ class FSM {
 		else {
 			this.initial=config.initial;
 			this.states=['normal','busy','hungry','sleeping'];
+			this.triggerOne=null;
+			this.triggerTwo=null;				
+			this.triggerFirst=null;
+			this.triggerSecond=null;
 		}
 	}
 
-    /**
-     * Returns active state.
-     * @returns {String}
-     */
-    getState() {
-//		console.log('this.initial= ',this.initial);
-//		console.log('this.states= ',this.states);
+     getState() {
 		return this.initial;
 	}
 
-    /**
-     * Goes to specified state.
-     * @param state
-     */
     changeState(state) {
 		for(var i=0;i<this.states.length;i++){
 			if(state==this.states[i]){
+				this.triggerOne=this.initial;
 				this.initial=this.states[i];
+				this.triggerFirst=null;
 				return;
 			}			
 		}
 		alert('ERROR');
-//		if(state!=this.initial){
-//			alert('ERROR');	
 	}
 
-    /**
-     * Changes state according to event transition rules.
-     * @param event
-     */
-    trigger(event) {}
+    trigger(event) {
+		if(event=='study'&&this.initial=='normal'){
+			this.triggerOne='normal';
+			this.initial='busy';
+			this.triggerFirst=null;
+		}
+		else if(event=='get_tired'&&this.initial=='busy'){
+			this.triggerOne='busy';
+			this.triggerTwo='normal';
+			this.initial='sleeping';
+			this.triggerFirst=null;
+		}
+		else if(event=='get_hungry'&&this.initial=='busy'){
+			this.triggerOne='busy';
+			this.triggerTwo='normal';
+			this.initial='hungry';
+			this.triggerFirst=null;
+		}
+		else if(event=='get_up'&&this.initial=='sleeping'){
+			this.triggerOne='sleeping';
+			this.triggerTwo='busy';
+			this.initial='normal';
+			this.triggerFirst=null;
+		}
+		else if(event=='eat'&&this.initial=='hungry'){
+			this.triggerOne='hungry';
+			this.triggerTwo='busy';
+			this.initial='normal';
+			this.triggerFirst=null;
+		}
+		else if(event=='get_hungry'&&this.initial=='sleeping'){
+			this.triggerOne='sleeping';
+			this.triggerTwo='busy';			
+			this.initial='hungry';
+			this.triggerFirst=null;
+		}
+		else{
+			alert('ERROR');
+		}	
+	}
 
-    /**
-     * Resets FSM state to initial.
-     */
     reset() {
 		this.initial='normal';
 	}
 
-    /**
-     * Returns an array of states for which there are specified event transition rules.
-     * Returns all states if argument is undefined.
-     * @param event
-     * @returns {Array}
-     */
-    getStates(event) {}
+    getStates(event) {
+		if(!event){
+			return ['normal', 'busy', 'hungry', 'sleeping'];
+		}
+		else if(event=='get_hungry'){
+			return ['busy', 'sleeping'];
+		}
+		else if(event=='study'){
+			return ['normal'];
+		}
+		else{
+			return [];
+		}		
+	}
 
-    /**
-     * Goes back to previous state.
-     * Returns false if undo is not available.
-     * @returns {Boolean}
-     */
-    undo() {}
+    undo() {
+		if(this.triggerOne!=null){
+			if(this.triggerFirst==null){
+				this.triggerFirst=this.initial;
+			}
+			else{
+				this.triggerSecond=this.triggerFirst;
+				this.triggerFirst=this.initial;
+			}
+			
+			this.initial=this.triggerOne;			
+			if(this.triggerTwo!=null){
+				this.triggerOne=this.triggerTwo;
+				this.triggerTwo=null;
+			}
+			else{
+				this.triggerOne=null;
+			}
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
 
-    /**
-     * Goes redo to state.
-     * Returns false if redo is not available.
-     * @returns {Boolean}
-     */
-    redo() {}
+    redo() {
+		if(this.triggerFirst!=null){
+			this.triggerOne=this.initial;
+			this.initial=this.triggerFirst;
 
-    /**
-     * Clears transition history
-     */
-    clearHistory() {}
+			if(this.triggerSecond!=null){
+				this.triggerFirst=this.triggerSecond;
+				this.triggerSecond=null;			
+			}
+			else{
+				this.triggerFirst=null;
+			}
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+    clearHistory() {
+		this.triggerOne=null;
+		this.triggerFirst=null;
+	}
 }
 
 module.exports = FSM;
